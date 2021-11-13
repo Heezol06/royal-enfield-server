@@ -23,6 +23,13 @@ async function run(){
       // const usersCollection = database.collection('users')
 
       // get bike collection api 
+      app.post('/bikes', async(req, res)=>{
+        console.log(req.body);
+        const products = await bikeCollection.insertOne(req.body);
+        res.json(products)
+      })
+
+      // get bike collection api 
       app.get('/bikes', async(req, res)=>{
         const cursor = bikeCollection.find({});
         const products = await cursor.toArray();
@@ -43,7 +50,7 @@ async function run(){
       const userDatabase = client.db('royal-enfield')
       const usersCollection = userDatabase.collection('users')
 
-      //post api
+      //post order
       app.post('/addOrderInfo', async(req, res)=>{
         console.log(req.body);
         const result = await usersCollection.insertOne(req.body)
@@ -54,15 +61,38 @@ async function run(){
       app.get('/orders', async(req, res)=>{
         const result = await usersCollection.find({}).toArray()
         res.json(result);
+        console.log(result);
       })
-
       //delete order
-      app.delete('/deleteOrder/:id', async(req, res)=>{
+      app.delete('/orders/:id', async(req, res)=>{
         const id = req.params.id;
         const order = {_id:ObjectId(id)}
         const result = await usersCollection.deleteOne(order)
-        req.json(result.acknowledged)
+        res.json(result.acknowledged)
       })
+
+      // make amdin 
+      app.put('/orders')
+
+      //user review collection
+      const reviewDatabase = client.db('royal-enfield')
+      const reviewCollection = reviewDatabase.collection('review')
+
+      // post review 
+      app.post('/addReview', async(req, res) => {
+        console.log(req.body)
+        const result = await reviewCollection.insertOne(req.body)
+        res.json(result)
+        console.log(result);
+      })
+
+      //get review
+      app.get('/review', async(req , res) =>{
+        const result = await reviewCollection.find({}).toArray()
+        res.json(result);
+        console.log('got result', result);
+      })
+      
   }
   finally{
         // await client.close();
