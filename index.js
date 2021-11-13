@@ -20,7 +20,7 @@ async function run(){
       await client.connect();
       const database = client.db('royal-enfield');
       const bikeCollection = database.collection('bikes');
-      // const usersCollection = database.collection('users')
+      const loginUsersCollection = database.collection('loginUsers')
 
       // get bike collection api 
       app.post('/bikes', async(req, res)=>{
@@ -34,6 +34,13 @@ async function run(){
         const cursor = bikeCollection.find({});
         const products = await cursor.toArray();
         res.json(products)
+      })
+
+      app.delete('/bikes/:id', async(req, res)=>{
+        const id = req.params.id;
+        const order = {_id:ObjectId(id)}
+        const result = await bikeCollection.deleteOne(order)
+        res.json(result.acknowledged)
       })
 
       //get single products
@@ -92,6 +99,38 @@ async function run(){
         res.json(result);
         console.log('got result', result);
       })
+
+      //checking admin or not 
+      app.get('/users/:email', async(req, res)=>{
+        const email = req.params.email;
+        const query = {email: email};
+        const user = await loginUsersCollection.findOne(query)
+        let isAdmin = false;
+        if (user?.role === 'admin') {
+          isAdmin = true;
+        }
+        res.json({admin: isAdmin});
+      })
+
+      // login user 
+      app.post('/users', async(req , res)=>{
+        const user = req.body;
+        console.log(user);
+        const result = await loginUsersCollection.insertOne(user);
+        res.json(result)
+          console.log(result);
+      })
+
+      // update rote
+      app.put('/users/admin', async (req, res) =>{
+        const user = req.body;
+        console.log(user);
+        const filter = {email: user.email};
+        const updateDoc = {$set:{role: 'admin'}};
+        const result = await loginUsersCollection.updateOne(filter, updateDoc)
+        res.json(result)
+        console.log(result);
+      }) 
       
   }
   finally{
